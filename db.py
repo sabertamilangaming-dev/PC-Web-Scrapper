@@ -17,7 +17,11 @@ class ListingDatabase:
         self._init_schema()
 
     def _connect(self) -> sqlite3.Connection:
-        return sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(self.db_path, timeout=30)
+        conn.execute("PRAGMA busy_timeout = 30000")
+        conn.execute("PRAGMA journal_mode = WAL")
+        conn.execute("PRAGMA synchronous = NORMAL")
+        return conn
 
     def _init_schema(self) -> None:
         with self._connect() as conn:

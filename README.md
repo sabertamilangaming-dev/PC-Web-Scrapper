@@ -7,7 +7,10 @@ Continuously monitors OLX, Reddit, and Telegram channels for free, scrap, dead, 
 ```text
 PC Finder/
 ├── .env.example
+├── .dockerignore
 ├── README.md
+├── Dockerfile
+├── docker-compose.yml
 ├── requirements.txt
 ├── config.py
 ├── db.py
@@ -50,6 +53,38 @@ python main.py
 ```
 
 The scraper runs every 10 minutes by default and stores seen listings in `data/listings.sqlite3`.
+
+## Docker On Ubuntu Server
+
+```bash
+sudo apt update
+sudo apt install -y docker.io docker-compose-plugin
+sudo usermod -aG docker "$USER"
+newgrp docker
+```
+
+Copy `.env.example` to `.env`, fill the API keys, then run:
+
+```bash
+docker compose up -d --build
+docker compose logs -f pc-finder
+```
+
+Scale local workers:
+
+```bash
+docker compose up -d --scale pc-finder=3
+```
+
+All replicas share the same Docker volume and SQLite database. SQLite runs in WAL mode, so `link` remains the primary-key dedupe guard across replicas.
+
+For scaled mode, prefer disabling `ENABLE_TELEGRAM_SCRAPER` or using `TELEGRAM_SCRAPER_BOT_TOKEN`; multiple user-session Telethon workers should not share one session file.
+
+Stop:
+
+```bash
+docker compose down
+```
 
 ## Add A New Source
 

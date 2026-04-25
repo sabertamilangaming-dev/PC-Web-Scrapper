@@ -1,0 +1,29 @@
+services:
+  pc-finder:
+    build:
+      context: .
+    image: pc-finder:latest
+    restart: unless-stopped
+    init: true
+    env_file:
+      - .env
+    environment:
+      DATABASE_PATH: /app/data/listings.sqlite3
+      TELETHON_SESSION_NAME: /app/data/pc_finder_telegram
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      SCRAPE_INTERVAL_SECONDS: ${SCRAPE_INTERVAL_SECONDS:-600}
+    volumes:
+      - pc_finder_data:/app/data
+    stop_grace_period: 30s
+    deploy:
+      restart_policy:
+        condition: any
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 512M
+        reservations:
+          memory: 128M
+
+volumes:
+  pc_finder_data:
